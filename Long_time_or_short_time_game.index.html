@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Long-time or short-time? — Unit 6 Verb Sorter</title>
+<style>
+  :root {
+    --terracotta: #B85C3C;
+    --terracotta-dark: #8B4226;
+    --terracotta-light: #E8A085;
+    --sand: #F4E4D1;
+    --cream: #FBF5EB;
+    --charcoal: #2E2A26;
+    --grey-rule: #C8B8A8;
+    --text-muted: #6B5D54;
+    --green: #5B8C5A;
+    --red: #C25450;
+    --shadow: 0 2px 8px rgba(46, 42, 38, 0.08);
+    --shadow-lifted: 0 6px 16px rgba(46, 42, 38, 0.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Calibri, 'Segoe UI', sans-serif;
+    background: var(--cream);
+    color: var(--charcoal);
+    min-height: 100vh;
+    padding: 24px;
+    line-height: 1.4;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  header {
+    text-align: left;
+    margin-bottom: 16px;
+  }
+
+  .unit-tag {
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    color: var(--terracotta);
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  h1 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--charcoal);
+    line-height: 1.1;
+  }
+
+  .subtitle {
+    font-style: italic;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    margin-top: 4px;
+  }
+
+  .double-rule {
+    border-bottom: 3px solid var(--terracotta);
+    margin: 16px 0 4px 0;
+  }
+  .double-rule-thin {
+    border-bottom: 1px solid var(--terracotta);
+    margin-bottom: 24px;
+  }
+
+  /* Screens */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* === Title screen === */
+  .intro-card {
+    background: white;
+    border-top: 4px solid var(--terracotta);
+    border-radius: 4px;
+    padding: 32px 36px;
+    box-shadow: var(--shadow);
+    margin-bottom: 24px;
+  }
+
+  .intro-card h2 {
+    font-size: 1.5rem;
+    margin-bottom: 16px;
+    color: var(--charcoal);
+  }
+
+  .intro-card p {
+    margin-bottom: 12px;
+  }
+
+  .intro-card ul {
+    margin: 12px 0 16px 24px;
+  }
+  .intro-card li {
+    margin-bottom: 6px;
+  }
+
+  .btn {
+    display: inline-block;
+    background: var(--terracotta);
+    color: white;
+    border: none;
+    padding: 14px 32px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.15s, transform 0.05s;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .btn:hover { background: var(--terracotta-dark); }
+  .btn:active { transform: translateY(1px); }
+  .btn:disabled {
+    background: var(--grey-rule);
+    cursor: not-allowed;
+  }
+  .btn-secondary {
+    background: white;
+    color: var(--terracotta);
+    border: 2px solid var(--terracotta);
+  }
+  .btn-secondary:hover {
+    background: var(--terracotta);
+    color: white;
+  }
+
+  /* === Game screen === */
+  .game-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--sand);
+    padding: 12px 20px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    font-weight: 600;
+  }
+  .game-info .info-item {
+    color: var(--terracotta-dark);
+  }
+  .game-info .info-item span {
+    color: var(--charcoal);
+    margin-left: 6px;
+  }
+
+  /* Verb pool */
+  .verb-pool {
+    background: white;
+    border: 2px dashed var(--grey-rule);
+    border-radius: 4px;
+    padding: 20px;
+    min-height: 100px;
+    margin-bottom: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-content: flex-start;
+  }
+
+  .verb-pool-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-weight: 600;
+    width: 100%;
+    margin-bottom: 8px;
+  }
+
+  /* Verbs */
+  .verb {
+    background: var(--cream);
+    border: 2px solid var(--terracotta);
+    color: var(--charcoal);
+    padding: 10px 18px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: grab;
+    user-select: none;
+    transition: transform 0.1s, box-shadow 0.1s;
+    touch-action: none;
+  }
+  .verb:hover {
+    box-shadow: var(--shadow);
+  }
+  .verb.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+  }
+  .verb.in-zone-long {
+    background: #DCE9D5;
+    border-color: var(--green);
+  }
+  .verb.in-zone-short {
+    background: #F4D5C2;
+    border-color: var(--terracotta);
+  }
+
+  /* Drop zones */
+  .drop-zones {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+
+  .drop-zone {
+    background: white;
+    border: 2px solid var(--grey-rule);
+    border-radius: 4px;
+    padding: 20px;
+    min-height: 200px;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .drop-zone.zone-long { border-top: 4px solid var(--green); }
+  .drop-zone.zone-short { border-top: 4px solid var(--terracotta); }
+  .drop-zone.drag-over {
+    background: var(--sand);
+    border-color: var(--terracotta);
+  }
+
+  .drop-zone-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--terracotta-dark);
+  }
+  .drop-zone-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--charcoal);
+    margin-bottom: 6px;
+  }
+  .drop-zone-desc {
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 0.95rem;
+    margin-bottom: 16px;
+  }
+  .drop-zone-verbs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    min-height: 60px;
+    align-content: flex-start;
+  }
+
+  .actions {
+    text-align: center;
+  }
+
+  /* === Results screen === */
+  .results-card {
+    background: white;
+    border-top: 4px solid var(--terracotta);
+    border-radius: 4px;
+    padding: 32px 36px;
+    box-shadow: var(--shadow);
+    margin-bottom: 24px;
+  }
+
+  .score-display {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .score-headline {
+    font-size: 4rem;
+    font-weight: 700;
+    color: var(--terracotta);
+    line-height: 1;
+  }
+  .score-label {
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin-top: 4px;
+  }
+  .score-time {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    margin-top: 12px;
+  }
+
+  .review-section h3 {
+    color: var(--charcoal);
+    font-size: 1.2rem;
+    margin-top: 24px;
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--grey-rule);
+  }
+  .review-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .review-column h4 {
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .review-verb {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 4px;
+    margin: 0 6px 6px 0;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .review-verb.correct {
+    background: #DCE9D5;
+    color: #335A35;
+    border: 1px solid var(--green);
+  }
+  .review-verb.wrong {
+    background: #F4D5C2;
+    color: var(--terracotta-dark);
+    border: 1px solid var(--terracotta);
+    text-decoration: line-through;
+    text-decoration-color: var(--terracotta-dark);
+    text-decoration-thickness: 1.5px;
+  }
+
+  .results-actions {
+    margin-top: 32px;
+    text-align: center;
+  }
+  .results-actions .btn { margin: 0 6px; }
+
+  .feedback-message {
+    text-align: center;
+    padding: 16px 24px;
+    background: var(--sand);
+    border-radius: 4px;
+    margin: 0 0 20px 0;
+    font-style: italic;
+    color: var(--charcoal);
+  }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    margin-top: 40px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+  }
+
+  /* Responsive */
+  @media (max-width: 720px) {
+    .drop-zones {
+      grid-template-columns: 1fr;
+    }
+    .review-grid {
+      grid-template-columns: 1fr;
+    }
+    h1 { font-size: 1.9rem; }
+    .intro-card, .results-card { padding: 24px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <div class="unit-tag">Unit 6 · Easier said than done · Game</div>
+    <h1>Long-time or short-time?</h1>
+    <p class="subtitle">A verb-sorting game for pairs</p>
+    <div class="double-rule"></div>
+    <div class="double-rule-thin"></div>
+  </header>
+
+  <!-- ============ TITLE SCREEN ============ -->
+  <div id="title-screen" class="screen active">
+    <div class="intro-card">
+      <h2>How to play</h2>
+      <p>Work in <strong>pairs or small groups</strong>. You will see 15 verbs in the box at the top of the screen. Some of these verbs describe <strong>long, ongoing actions</strong> (like swimming or studying). Others describe <strong>short, single moments</strong> (like dropping or stopping).</p>
+      <p>Your job is to <strong>drag each verb into the correct column</strong>:</p>
+      <ul>
+        <li><strong>Long-time verbs</strong> — actions that naturally take a long time</li>
+        <li><strong>Short-time verbs</strong> — actions that happen in a single, quick moment</li>
+      </ul>
+      <p><strong>Talk about each verb together</strong> before you drop it. Don't rush! When you have placed all 15 verbs, click <em>Done</em> to see your score.</p>
+      <p style="margin-top: 20px;"><button class="btn" onclick="startGame()">Start the game</button></p>
+    </div>
+  </div>
+
+  <!-- ============ GAME SCREEN ============ -->
+  <div id="game-screen" class="screen">
+    <div class="game-info">
+      <div class="info-item">Verbs placed: <span id="placed-count">0</span> / 15</div>
+      <div class="info-item">Time: <span id="timer">0:00</span></div>
+    </div>
+
+    <div class="verb-pool" id="verb-pool">
+      <div class="verb-pool-label">Drag verbs from here ↓</div>
+    </div>
+
+    <div class="drop-zones">
+      <div class="drop-zone zone-long" id="zone-long" data-zone="long">
+        <div class="drop-zone-label">Column 1</div>
+        <div class="drop-zone-title">Long-time verbs</div>
+        <div class="drop-zone-desc">Actions that take a long time</div>
+        <div class="drop-zone-verbs" id="zone-long-verbs"></div>
+      </div>
+
+      <div class="drop-zone zone-short" id="zone-short" data-zone="short">
+        <div class="drop-zone-label">Column 2</div>
+        <div class="drop-zone-title">Short-time verbs</div>
+        <div class="drop-zone-desc">Actions that happen in a moment</div>
+        <div class="drop-zone-verbs" id="zone-short-verbs"></div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn" id="done-btn" onclick="finishGame()" disabled>Done — check our answers</button>
+    </div>
+  </div>
+
+  <!-- ============ RESULTS SCREEN ============ -->
+  <div id="results-screen" class="screen">
+    <div class="results-card">
+      <div class="score-display">
+        <div class="score-headline" id="score-headline">0 / 15</div>
+        <div class="score-label">verbs correctly placed</div>
+        <div class="score-time">Time: <span id="final-time">0:00</span></div>
+      </div>
+
+      <div class="feedback-message" id="feedback-message"></div>
+
+      <div class="review-section">
+        <h3>Long-time verbs</h3>
+        <div class="review-grid">
+          <div class="review-column">
+            <h4>You got these right ✓</h4>
+            <div id="long-correct"></div>
+          </div>
+          <div class="review-column">
+            <h4>These should be here ✗</h4>
+            <div id="long-missed"></div>
+          </div>
+        </div>
+
+        <h3>Short-time verbs</h3>
+        <div class="review-grid">
+          <div class="review-column">
+            <h4>You got these right ✓</h4>
+            <div id="short-correct"></div>
+          </div>
+          <div class="review-column">
+            <h4>These should be here ✗</h4>
+            <div id="short-missed"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="results-actions">
+        <button class="btn btn-secondary" onclick="resetGame()">Try again</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>—  Unit 6  ·  Easier said than done  —</footer>
+
+</div>
+
+<script>
+  // ===== VERB DATA =====
+  // Mix from the Rule 4 lists in the worksheet, with a couple of extras
+  // for spice ("swim", "drop"). State verbs deliberately excluded.
+  const VERBS = [
+    // Long-time (8)
+    { word: "wait",   type: "long" },
+    { word: "play",   type: "long" },
+    { word: "rain",   type: "long" },
+    { word: "run",    type: "long" },
+    { word: "study",  type: "long" },
+    { word: "sleep",  type: "long" },
+    { word: "swim",   type: "long" },
+    { word: "read",   type: "long" },
+    // Short-time (7)
+    { word: "break",  type: "short" },
+    { word: "lose",   type: "short" },
+    { word: "find",   type: "short" },
+    { word: "arrive", type: "short" },
+    { word: "stop",   type: "short" },
+    { word: "drop",   type: "short" },
+    { word: "leave",  type: "short" }
+  ];
+
+  // ===== STATE =====
+  let placements = {}; // verb word -> 'long' | 'short' | 'pool'
+  let timerInterval = null;
+  let startTime = null;
+  let elapsedSeconds = 0;
+
+  // ===== HELPERS =====
+  function shuffleArray(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function formatTime(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return m + ":" + (s < 10 ? "0" : "") + s;
+  }
+
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+  }
+
+  // ===== GAME LIFECYCLE =====
+  function startGame() {
+    // Reset state
+    placements = {};
+    VERBS.forEach(v => { placements[v.word] = 'pool'; });
+    elapsedSeconds = 0;
+
+    // Build verb chips in the pool
+    const pool = document.getElementById('verb-pool');
+    // Clear pool, but keep the label
+    pool.querySelectorAll('.verb').forEach(el => el.remove());
+    // Clear zones
+    document.getElementById('zone-long-verbs').innerHTML = '';
+    document.getElementById('zone-short-verbs').innerHTML = '';
+
+    // Shuffle verbs and create chips
+    const shuffled = shuffleArray(VERBS);
+    shuffled.forEach(v => {
+      const chip = createVerbChip(v.word);
+      pool.appendChild(chip);
+    });
+
+    // Setup drop zones
+    setupDropZone(document.getElementById('verb-pool'), 'pool');
+    setupDropZone(document.getElementById('zone-long'), 'long');
+    setupDropZone(document.getElementById('zone-short'), 'short');
+
+    // Update counter
+    updatePlacedCount();
+
+    // Start timer
+    startTime = Date.now();
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+      document.getElementById('timer').textContent = formatTime(elapsedSeconds);
+    }, 1000);
+
+    showScreen('game-screen');
+  }
+
+  function createVerbChip(word) {
+    const chip = document.createElement('div');
+    chip.className = 'verb';
+    chip.textContent = word;
+    chip.draggable = true;
+    chip.dataset.word = word;
+
+    // Desktop drag events
+    chip.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text/plain', word);
+      chip.classList.add('dragging');
+    });
+    chip.addEventListener('dragend', () => {
+      chip.classList.remove('dragging');
+    });
+
+    // Touch events for mobile/tablet
+    let touchOffset = { x: 0, y: 0 };
+    let draggedClone = null;
+    let lastTouchTarget = null;
+
+    chip.addEventListener('touchstart', e => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      const rect = chip.getBoundingClientRect();
+      touchOffset = {
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top
+      };
+      draggedClone = chip.cloneNode(true);
+      draggedClone.style.position = 'fixed';
+      draggedClone.style.left = rect.left + 'px';
+      draggedClone.style.top = rect.top + 'px';
+      draggedClone.style.zIndex = '1000';
+      draggedClone.style.pointerEvents = 'none';
+      draggedClone.style.opacity = '0.85';
+      draggedClone.classList.add('dragging');
+      document.body.appendChild(draggedClone);
+      chip.style.opacity = '0.3';
+    }, { passive: false });
+
+    chip.addEventListener('touchmove', e => {
+      e.preventDefault();
+      if (!draggedClone) return;
+      const touch = e.touches[0];
+      draggedClone.style.left = (touch.clientX - touchOffset.x) + 'px';
+      draggedClone.style.top = (touch.clientY - touchOffset.y) + 'px';
+
+      // Highlight drop zone under finger
+      draggedClone.style.display = 'none';
+      const target = document.elementFromPoint(touch.clientX, touch.clientY);
+      draggedClone.style.display = '';
+
+      document.querySelectorAll('.drop-zone, .verb-pool').forEach(z => z.classList.remove('drag-over'));
+      const zone = target?.closest('.drop-zone, .verb-pool');
+      if (zone) {
+        zone.classList.add('drag-over');
+        lastTouchTarget = zone;
+      } else {
+        lastTouchTarget = null;
+      }
+    }, { passive: false });
+
+    chip.addEventListener('touchend', e => {
+      e.preventDefault();
+      chip.style.opacity = '';
+      if (draggedClone) {
+        draggedClone.remove();
+        draggedClone = null;
+      }
+      document.querySelectorAll('.drop-zone, .verb-pool').forEach(z => z.classList.remove('drag-over'));
+      if (lastTouchTarget) {
+        const zoneType = lastTouchTarget.dataset.zone ||
+          (lastTouchTarget.id === 'verb-pool' ? 'pool' : null);
+        if (zoneType) {
+          placeVerb(word, zoneType);
+        }
+      }
+    }, { passive: false });
+
+    return chip;
+  }
+
+  function setupDropZone(zoneEl, zoneType) {
+    zoneEl.dataset.zone = zoneType;
+
+    zoneEl.addEventListener('dragover', e => {
+      e.preventDefault();
+      zoneEl.classList.add('drag-over');
+    });
+    zoneEl.addEventListener('dragleave', e => {
+      // Only remove highlight if leaving the actual zone (not a child)
+      if (e.target === zoneEl) {
+        zoneEl.classList.remove('drag-over');
+      }
+    });
+    zoneEl.addEventListener('drop', e => {
+      e.preventDefault();
+      zoneEl.classList.remove('drag-over');
+      const word = e.dataTransfer.getData('text/plain');
+      if (word) placeVerb(word, zoneType);
+    });
+  }
+
+  function placeVerb(word, zoneType) {
+    if (placements[word] === zoneType) return;
+    placements[word] = zoneType;
+
+    // Find the chip
+    const chip = document.querySelector(`.verb[data-word="${word}"]`);
+    if (!chip) return;
+
+    // Remove from current parent
+    chip.remove();
+
+    // Visual class
+    chip.classList.remove('in-zone-long', 'in-zone-short');
+    if (zoneType === 'long') chip.classList.add('in-zone-long');
+    else if (zoneType === 'short') chip.classList.add('in-zone-short');
+
+    // Add to target
+    let target;
+    if (zoneType === 'long') target = document.getElementById('zone-long-verbs');
+    else if (zoneType === 'short') target = document.getElementById('zone-short-verbs');
+    else target = document.getElementById('verb-pool');
+    target.appendChild(chip);
+
+    updatePlacedCount();
+  }
+
+  function updatePlacedCount() {
+    const placed = Object.values(placements).filter(z => z !== 'pool').length;
+    document.getElementById('placed-count').textContent = placed;
+    document.getElementById('done-btn').disabled = (placed < 15);
+  }
+
+  // ===== FINISH & RESULTS =====
+  function finishGame() {
+    if (timerInterval) clearInterval(timerInterval);
+
+    // Count correct
+    let correct = 0;
+    const correctLong = [];
+    const correctShort = [];
+    const wrongLong = [];   // user put in long but it's short
+    const wrongShort = [];  // user put in short but it's long
+
+    VERBS.forEach(v => {
+      const placement = placements[v.word];
+      if (placement === v.type) {
+        correct++;
+        if (v.type === 'long') correctLong.push(v.word);
+        else correctShort.push(v.word);
+      } else {
+        // misplaced
+        if (placement === 'long') wrongLong.push(v.word);    // user said long, actually short
+        else if (placement === 'short') wrongShort.push(v.word); // user said short, actually long
+      }
+    });
+
+    // Render score
+    document.getElementById('score-headline').textContent = correct + ' / 15';
+    document.getElementById('final-time').textContent = formatTime(elapsedSeconds);
+
+    // Feedback message
+    let msg;
+    if (correct === 15) {
+      msg = "Perfect score! You and your partner have a great feel for these verbs.";
+    } else if (correct >= 12) {
+      msg = "Excellent work — almost all correct. Talk about the ones you got wrong: why did they trick you?";
+    } else if (correct >= 8) {
+      msg = "Good effort! Discuss the ones you got wrong with your partner before you try again.";
+    } else {
+      msg = "Have another look at the verbs you placed in the wrong column. What do they have in common?";
+    }
+    document.getElementById('feedback-message').textContent = msg;
+
+    // Review columns
+    document.getElementById('long-correct').innerHTML =
+      correctLong.map(w => `<span class="review-verb correct">${w}</span>`).join('') || '<em style="color:var(--text-muted)">none</em>';
+    document.getElementById('long-missed').innerHTML =
+      wrongShort.map(w => `<span class="review-verb wrong">${w}</span>`).join('') || '<em style="color:var(--text-muted)">none — well done!</em>';
+    document.getElementById('short-correct').innerHTML =
+      correctShort.map(w => `<span class="review-verb correct">${w}</span>`).join('') || '<em style="color:var(--text-muted)">none</em>';
+    document.getElementById('short-missed').innerHTML =
+      wrongLong.map(w => `<span class="review-verb wrong">${w}</span>`).join('') || '<em style="color:var(--text-muted)">none — well done!</em>';
+
+    showScreen('results-screen');
+  }
+
+  function resetGame() {
+    startGame();
+  }
+
+  // ===== PREVENT ACCIDENTAL PAGE-LEAVE TOUCH SCROLL ON CHIPS =====
+  document.addEventListener('touchmove', e => {
+    if (e.target.classList && e.target.classList.contains('verb')) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+</script>
+
+</body>
+</html>
